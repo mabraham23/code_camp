@@ -6,7 +6,7 @@
  * For more information, read
  * https://developer.spotify.com/web-api/authorization-guide/#client_credentials_flow
  */
-
+var global_token;
 var request = require('request'); // "Request" library
 
 var client_id = '8bcb169f90554b209a351f9016ec7b04'; // Your client id
@@ -29,6 +29,7 @@ request.post(authOptions, function(error, response, body) {
 
     // use the access token to access the Spotify Web API
     var token = body.access_token;
+    // global_token.token = token;
     var options = {
       url: 'https://api.spotify.com/v1/users/jmperezperez',
       headers: {

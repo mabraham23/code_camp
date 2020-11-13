@@ -17,6 +17,9 @@ var client_id = '8bcb169f90554b209a351f9016ec7b04'; // Your client id
 var client_secret = 'b6e3d58e0f884aed8fa358beea0aed3e'; // Your secret
 var redirect_uri = 'http://localhost:8888/callback'; // Your redirect uri
 
+var global_token = {
+  token: ""
+}
 /**
  * Generates a random string containing numbers and letters
  * @param  {number} length The length of the string
@@ -46,7 +49,7 @@ app.get('/login', function(req, res) {
   res.cookie(stateKey, state);
 
   // your application requests authorization
-  var scope = 'user-read-private user-read-email';
+  var scope = 'user-read-private user-read-email user-read-currently-playing';
   res.redirect('https://accounts.spotify.com/authorize?' +
     querystring.stringify({
       response_type: 'code',
@@ -91,6 +94,7 @@ app.get('/callback', function(req, res) {
 
         var access_token = body.access_token,
             refresh_token = body.refresh_token;
+        global_token.token = access_token;
 
         var options = {
           url: 'https://api.spotify.com/v1/me',
@@ -137,8 +141,39 @@ app.get('/refresh_token', function(req, res) {
     if (!error && response.statusCode === 200) {
       var access_token = body.access_token;
       res.send({
-        'access_token': access_token
+        'access_token': global_access.token, 
       });
+    }
+  });
+});
+
+app.get('/current_track', function(req, res) {
+
+  // requesting access token from refresh token
+  // var refresh_token = req.query.refresh_token;
+  //11dFghVXANMlKmJXsNCbNl
+  //https://api.spotify.com/v1/audio-analysis/{id}
+  // var token = body.access_token;
+  var authOptions = {
+    url: 'https://api.spotify.com/v1/me/player/currently-playing',
+    headers: {
+        'Authorization': 'Bearer ' + 'BQDoHGpnfmJvEvqYrGFHoPZ2x1Zas44iTawyHMG2aibcwwgh9JsnT778YLoY5-7ao9BzaB8d6LWNSPW2WDV5F3ofn5J3SpOov3jgUjWtUy7UvLGpx7B_MOimQyTbxTaDo0Wm-lp1kmut6S8x4J0XMhqlOrzXqqiKjcWNSHFlzw', 
+    },
+    // headers: { 'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64')) },
+    // form: {
+    //   grant_type: 'refresh_token',
+    //   refresh_token: refresh_token
+    // },
+    json: true
+  };
+  // console.lot(authOptions.headers);
+
+  request.get(authOptions, function(error, response, body) {
+    console.log(response.statusCode);
+    if (!error && response.statusCode === 200) {
+      // console.log(body);
+      console.log(body.item.artists[0].name);
+      console.log(body.item.name);
     }
   });
 });
